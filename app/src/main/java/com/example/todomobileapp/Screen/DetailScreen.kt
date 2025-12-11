@@ -1,14 +1,11 @@
 package com.example.todomobileapp.Screen
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -26,11 +24,8 @@ import com.example.todomobileapp.R
 fun DetailScreen(navController: NavController) {
 
     var taskTitle by remember { mutableStateOf("") }
-    var notesText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf(-1) }
-
-    var dateText by remember { mutableStateOf("") }
-    var timeText by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf(1) }
 
     Box(
         modifier = Modifier
@@ -38,26 +33,22 @@ fun DetailScreen(navController: NavController) {
             .background(Color(0xFFE8EFF7))
     ) {
 
-        // Purple Header
         Image(
-            painter = painterResource(id = R.drawable.header),
+            painter = painterResource(id = R.drawable.header2),
             contentDescription = "",
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
+                .height(96.dp)
+                .width(390.dp)
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // -------- TOP CLOSE + TITLE --------
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 35.dp, start = 20.dp, end = 20.dp),
+                    .padding(top = 30.dp, start = 20.dp, end = 20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                // Close button circle
                 Box(
                     modifier = Modifier
                         .size(38.dp)
@@ -69,7 +60,8 @@ fun DetailScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "",
-                        tint = Color.Black
+                        tint = Color(0xFF3D2A7C),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
 
@@ -78,180 +70,212 @@ fun DetailScreen(navController: NavController) {
                 Text(
                     text = "Add New Task",
                     color = Color.White,
-                    fontSize = 18.sp,
-                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ------- WHITE CONTAINER --------
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Color.White,
-                        RoundedCornerShape(topStart = 35.dp, topEnd = 35.dp)
-                    )
+                    .fillMaxWidth()
+                    .padding(20.dp)
             ) {
+                Text("Task Title", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(8.dp))
 
-                Column(modifier = Modifier.padding(22.dp)) {
+                OutlinedTextField(
+                    value = taskTitle,
+                    onValueChange = { taskTitle = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Task Title") },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF4D3B9E),
+                        unfocusedBorderColor = Color(0xFFC9C9C9),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
+                )
 
-                    // -------- TITLE --------
-                    Text("Task Title", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Category", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(12.dp))
 
-                    OutlinedTextField(
-                        value = taskTitle,
-                        onValueChange = { taskTitle = it },
-                        placeholder = { Text("Task Title") },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFD0D0D0),
-                            unfocusedBorderColor = Color(0xFFE0E0E0),
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                        )
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                    CategoryItem(
+                        id = 1,
+                        selectedCategory = selectedCategory,
+                        onSelect = { selectedCategory = it },
+                        icon = R.drawable.book,
+                        bgColor = Color(0xFFE5F0FF)
                     )
 
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    // -------- CATEGORY --------
-                    Text("Category", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-
-                        CategoryIcon(
-                            icon = R.drawable.book,
-                            selected = selectedCategory == 0,
-                            tint = Color(0xFFC3D4FF)        // light blue
-                        ) { selectedCategory = 0 }
-
-                        CategoryIcon(
-                            icon = R.drawable.calendar,
-                            selected = selectedCategory == 1,
-                            tint = Color(0xFFD7C5FF)        // purple
-                        ) { selectedCategory = 1 }
-
-                        CategoryIcon(
-                            icon = R.drawable.trophy,
-                            selected = selectedCategory == 2,
-                            tint = Color(0xFFFFE9B3)        // yellow
-                        ) { selectedCategory = 2 }
-                    }
-
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    // -------- DATE + TIME --------
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-
-                        // Date
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Date", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            OutlinedTextField(
-                                value = dateText,
-                                onValueChange = { dateText = it },
-                                placeholder = { Text("Date") },
-                                trailingIcon = {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.calendar),
-                                        contentDescription = "",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        // Time
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Time", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            OutlinedTextField(
-                                value = timeText,
-                                onValueChange = { timeText = it },
-                                placeholder = { Text("Time") },
-                                trailingIcon = {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.time),
-                                        contentDescription = "",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    // -------- NOTES --------
-                    Text("Notes", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    OutlinedTextField(
-                        value = notesText,
-                        onValueChange = { notesText = it },
-                        placeholder = { Text("Notes") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                        maxLines = 6,
-                        shape = RoundedCornerShape(14.dp)
+                    CategoryItem(
+                        id = 2,
+                        selectedCategory = selectedCategory,
+                        onSelect = { selectedCategory = it },
+                        icon = R.drawable.calendar,
+                        bgColor = Color(0xFFF2E8FF)
                     )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    CategoryItem(
+                        id = 3,
+                        selectedCategory = selectedCategory,
+                        onSelect = { selectedCategory = it },
+                        icon = R.drawable.trophy,
+                        bgColor = Color(0xFFFFF5D9)
+                    )
+                }
 
-                    // -------- SAVE BUTTON --------
-                    Button(
-                        onClick = {},
-                        modifier = Modifier
-                            .padding(bottom = 20.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        shape = RoundedCornerShape(40.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4A2E83)
+                Spacer(modifier = Modifier.height(25.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Date", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(12.dp)
+                                ),
+                            shape = RoundedCornerShape(12.dp),
+
+                            placeholder = { Text("Date") },
+
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.date),
+                                    contentDescription = "",
+                                    tint = Color(0xFF3D2A7C),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White,
+
+                                focusedBorderColor = Color(0xFF4D3B9E),
+                                unfocusedBorderColor = Color(0xFFC9C9C9),
+                                disabledBorderColor = Color(0xFFC9C9C9),
+                            )
                         )
-                    ) {
-                        Text("Save", fontSize = 18.sp, color = Color.White)
+
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Time", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = "",
+                            onValueChange = {},
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            placeholder = { Text("Time") },
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.time),
+                                    contentDescription = "",
+                                    tint = Color(0xFF3D2A7C),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }, colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White,
+
+                                focusedBorderColor = Color(0xFF4D3B9E),
+                                unfocusedBorderColor = Color(0xFFC9C9C9),
+                                disabledBorderColor = Color(0xFFC9C9C9),
+                            )
+                        )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(25.dp))
+                Text("Notes", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    placeholder = { Text("Notes") }, colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+
+                        focusedBorderColor = Color(0xFF4D3B9E),
+                        unfocusedBorderColor = Color(0xFFC9C9C9),
+                        disabledBorderColor = Color(0xFFC9C9C9),
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(35.dp))
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFF47348F))
+                ) {
+                    Text("Save", color = Color.White, fontSize = 16.sp)
+                }
+
             }
         }
     }
 }
 
-
 @Composable
-fun CategoryIcon(icon: Int, selected: Boolean, tint: Color, onClick: () -> Unit) {
+fun CategoryItem(
+    id: Int,
+    selectedCategory: Int,
+    onSelect: (Int) -> Unit,
+    icon: Int,
+    bgColor: Color
+) {
+
+    val isSelected = id == selectedCategory
 
     Box(
         modifier = Modifier
-            .size(58.dp)
+            .size(55.dp)
             .clip(CircleShape)
-            .background(if (selected) tint else Color(0xFFF1F0F6))
-            .clickable { onClick() },
+            .background(if (isSelected) Color.White else bgColor)
+            .border(
+                width = if (isSelected) 3.dp else 2.dp,
+                color = if (isSelected) Color(0xFF4D3B9E) else Color.White,
+                shape = CircleShape
+            )
+            .clickable { onSelect(id) },
         contentAlignment = Alignment.Center
     ) {
         Image(
             painter = painterResource(id = icon),
             contentDescription = "",
-            modifier = Modifier.size(26.dp)
+            modifier = Modifier.size(28.dp)
         )
     }
 }
