@@ -1,34 +1,50 @@
 package com.example.todomobileapp.Screen
 
-
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.todomobileapp.R
+import com.example.todomobileapp.roomdatabase.MainViewModel
+import com.example.todomobileapp.roomdatabase.Repository
+import com.example.todomobileapp.roomdatabase.Task
+import com.example.todomobileapp.roomdatabase.TaskDatabase
 
 @Composable
 fun HomeScreen(navController: NavController) {
 
-    var studyChecked by remember { mutableStateOf(false) }
-    var runChecked by remember { mutableStateOf(false) }
-    var partyChecked by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val taskDatabase = remember { TaskDatabase.getDataBase(context) }
+    val repository = remember { Repository(taskDatabase) }
+    val viewModel = remember { MainViewModel(repository) }
 
-    var meetupChecked by remember { mutableStateOf(true) }
-    var trashChecked by remember { mutableStateOf(true) }
+    val allTasks by viewModel.allNotes.observeAsState(initial = emptyList())
+
+
+    val activeTasks = allTasks.filter { !it.isCompleted }
+    val doneTasks = allTasks.filter { it.isCompleted }
 
     Box(
         modifier = Modifier
@@ -57,7 +73,8 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(Color.White)
+                        .clickable { },
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
@@ -89,65 +106,37 @@ fun HomeScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
 
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-            TaskCard(
-                icon = R.drawable.book,
-                title = "Study lesson",
-                time = "",
-                checked = studyChecked,
-                onCheckedChange = { studyChecked = it }
-            )
-
-            TaskCard(
-                icon = R.drawable.trophy,
-                title = "Run 5k",
-                time = "4:00pm",
-                checked = runChecked,
-                onCheckedChange = { runChecked = it }
-            )
-
-            TaskCard(
-                icon = R.drawable.calendar,
-                title = "Go to party",
-                time = "10:00pm",
-                checked = partyChecked,
-                onCheckedChange = { partyChecked = it }
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Completed",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 20.dp),
-                color = Color.Black
-            )
+            // 🔵 UNCOMPLETED TASKS
+            // Active Tasks
+            activeTasks.forEach { task ->
+                TaskCard(task = task, viewModel = viewModel)
+            }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            // Completed Tasks
+            if (doneTasks.isNotEmpty()) {
 
-            CompletedTaskCard(
-                icon = R.drawable.calendar,
-                title = "Game meetup",
-                time = "1:00pm",
-                checked = meetupChecked,
-                onCheckedChange = { meetupChecked = it }
-            )
+                Spacer(modifier = Modifier.height(20.dp))
 
-            CompletedTaskCard(
-                icon = R.drawable.book,
-                title = "Take out trash",
-                time = "",
-                checked = trashChecked,
-                onCheckedChange = { trashChecked = it }
-            )
+                Text(
+                    text = "Completed",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 20.dp)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                doneTasks.forEach { task ->
+                    TaskCard(task = task, viewModel = viewModel)
+                }
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = {navController.navigate(Screen.DetailScreen.route) },
+                onClick = { navController.navigate(Screen.DetailScreen.route) },
                 modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
@@ -163,13 +152,15 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
+
+// ----------------------------------------------------------------------
+// 🔥 CHECKBOX FIXED – TASK UPDATE WORKING
+// ----------------------------------------------------------------------
+
 @Composable
 fun TaskCard(
-    icon: Int,
-    title: String,
-    time: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    task: Task,
+    viewModel: MainViewModel
 ) {
 
     Box(
@@ -193,9 +184,9 @@ fun TaskCard(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = icon),
+                    painter = painterResource(id = getCategoryIcon(task.category)),
                     contentDescription = "",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
@@ -205,96 +196,48 @@ fun TaskCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = title,
+                    text = task.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
 
-                if (time.isNotEmpty()) {
+                task.timeMillis?.let { timeMillis ->
                     Text(
-                        text = time,
+                        text = millisToTime(timeMillis),
                         fontSize = 13.sp,
                         color = Color.DarkGray
                     )
                 }
             }
 
+            // ✔ Task Completion Checkbox
             Checkbox(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF4A2E83)
-                )
+                checked = task.isCompleted,
+                onCheckedChange = { checked ->
+                    viewModel.updateTaskCompletion(task, checked)
+                },
+                colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4A2E83))
             )
         }
     }
 }
 
-@Composable
-fun CompletedTaskCard(
-    icon: Int,
-    title: String,
-    time: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
 
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 6.dp)
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(16.dp))
-    ) {
+// TIME FORMAT
+fun millisToTime(millis: Long): String {
+    val calendar = java.util.Calendar.getInstance().apply { timeInMillis = millis }
+    val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+    val minute = calendar.get(java.util.Calendar.MINUTE)
+    return String.format("%02d:%02d", hour, minute)
+}
 
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .background(Color(0xFFF1F0F6), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = icon),
-                    contentDescription = "",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray,
-                    textDecoration = TextDecoration.LineThrough
-                )
-
-                if (time.isNotEmpty()) {
-                    Text(
-                        text = time,
-                        fontSize = 13.sp,
-                        color = Color.Gray,
-                        textDecoration = TextDecoration.LineThrough
-                    )
-                }
-            }
-
-            Checkbox(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF4A2E83)
-                )
-            )
-        }
+// ICON MAPPER
+fun getCategoryIcon(categoryId: Int): Int {
+    return when (categoryId) {
+        1 -> R.drawable.book
+        2 -> R.drawable.calendar
+        3 -> R.drawable.trophy
+        else -> R.drawable.ic_launcher_foreground
     }
 }
