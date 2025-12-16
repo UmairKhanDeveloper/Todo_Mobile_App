@@ -6,21 +6,21 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.splashscreen.SplashScreen
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.HomeScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.SplashScreen.route) {
+        composable(Screen.SplashScreen.route) { SplashScreen(navController) }
         composable(Screen.HomeScreen.route) { HomeScreen(navController) }
         composable(Screen.DetailScreen.route) { DetailScreen(navController) }
         composable(
             route = Screen.TaskDetail.route +
-                    "/{title}/{notes}/{category}/{dateMillis}/{timeMillis}/{isCompleted}",
+                    "/{id}/{title}/{notes}/{category}/{dateMillis}/{timeMillis}/{isCompleted}",
             arguments = listOf(
+                navArgument("id") { type = NavType.IntType }, // Task ID
                 navArgument("title") { type = NavType.StringType },
-                navArgument("notes") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                },
+                navArgument("notes") { type = NavType.StringType; defaultValue = "" },
                 navArgument("category") { type = NavType.IntType },
                 navArgument("dateMillis") { type = NavType.LongType },
                 navArgument("timeMillis") { type = NavType.LongType },
@@ -30,6 +30,7 @@ fun Navigation(navController: NavHostController) {
 
             val args = backStackEntry.arguments!!
 
+            val id = args.getInt("id")
             val title = args.getString("title") ?: ""
             val notes = args.getString("notes") ?: ""
             val category = args.getInt("category")
@@ -39,14 +40,16 @@ fun Navigation(navController: NavHostController) {
 
             TaskDetail(
                 navController = navController,
-                title,
+               id,
+                 title,
                 notes,
-                category,
-                dateMillis,
-                timeMillis,
-                isCompleted
+                 category,
+                 dateMillis,
+            timeMillis,
+                 isCompleted
             )
         }
+
 
 
     }
@@ -54,6 +57,7 @@ fun Navigation(navController: NavHostController) {
 }
 
 sealed class Screen(val route: String, val title: String) {
+    object SplashScreen : Screen("SplashScreen", "SplashScreen")
     object HomeScreen : Screen("HomeScreen", "HomeScreen")
     object DetailScreen : Screen("DetailScreen", "DetailScreen")
     object TaskDetail : Screen("TaskDetail", "TaskDetail")

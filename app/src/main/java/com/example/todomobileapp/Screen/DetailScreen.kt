@@ -6,17 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -26,12 +16,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,8 +34,9 @@ import com.example.todomobileapp.roomdatabase.Repository
 import com.example.todomobileapp.roomdatabase.Task
 import com.example.todomobileapp.roomdatabase.TaskDatabase
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
-
+import java.util.Locale
 
 @Composable
 fun DetailScreen(navController: NavController) {
@@ -74,14 +60,12 @@ fun DetailScreen(navController: NavController) {
 
     val calendar = Calendar.getInstance()
 
-
     val datePicker = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
             calendar.set(year, month, dayOfMonth)
-
             selectedDateMillis = calendar.timeInMillis
-            selectedDate = "$dayOfMonth/${month + 1}/$year"
+            selectedDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -90,12 +74,12 @@ fun DetailScreen(navController: NavController) {
 
     val timePicker = TimePickerDialog(
         context,
-        { _, hour, minute ->
-            calendar.set(Calendar.HOUR_OF_DAY, hour)
+        { _, hourOfDay, minute ->
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
             calendar.set(Calendar.MINUTE, minute)
-
             selectedTimeMillis = calendar.timeInMillis
-            selectedTime = String.format("%02d:%02d", hour, minute)
+            val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            selectedTime = formatter.format(calendar.time)
         },
         calendar.get(Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
@@ -113,7 +97,7 @@ fun DetailScreen(navController: NavController) {
             contentDescription = "",
             modifier = Modifier
                 .height(96.dp)
-                .width(390.dp)
+                .fillMaxWidth()
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -244,7 +228,6 @@ fun DetailScreen(navController: NavController) {
                                 unfocusedBorderColor = Color(0xFFC9C9C9)
                             )
                         )
-
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -261,9 +244,7 @@ fun DetailScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { timePicker.show() },
-
-                            placeholder = { Text(" Time") },
-
+                            placeholder = { Text("Time") },
                             shape = RoundedCornerShape(12.dp),
                             trailingIcon = {
                                 Icon(
@@ -275,7 +256,6 @@ fun DetailScreen(navController: NavController) {
                                         .clickable { timePicker.show() }
                                 )
                             },
-
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedContainerColor = Color.White,
                                 unfocusedContainerColor = Color.White,
@@ -311,10 +291,9 @@ fun DetailScreen(navController: NavController) {
 
                 Button(
                     onClick = {
-
                         scope.launch {
                             viewModel.Insert(
-                                task = Task(
+                                Task(
                                     id = null,
                                     title = taskTitle,
                                     notes = notes,
@@ -325,7 +304,6 @@ fun DetailScreen(navController: NavController) {
                             )
                         }
                         navController.popBackStack()
-
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -335,12 +313,10 @@ fun DetailScreen(navController: NavController) {
                 ) {
                     Text("Save", color = Color.White, fontSize = 16.sp)
                 }
-
             }
         }
     }
 }
-
 
 @Composable
 fun CategoryItem(
@@ -373,8 +349,3 @@ fun CategoryItem(
         )
     }
 }
-
-
-
-
-
