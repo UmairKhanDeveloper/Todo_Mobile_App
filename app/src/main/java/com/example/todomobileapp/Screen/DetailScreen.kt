@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -135,10 +133,9 @@ fun DetailScreen(navController: NavController) {
                         .clickable { navController.popBackStack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
+                    Image(
+                        painter = painterResource(id = R.drawable.arrowback),
                         contentDescription = "",
-                        tint = Color(0xFF3D2A7C),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -163,7 +160,6 @@ fun DetailScreen(navController: NavController) {
                     .padding(20.dp)
             ) {
 
-                // TASK TITLE
                 Text("Task Title", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(8.dp))
 
@@ -316,17 +312,19 @@ fun DetailScreen(navController: NavController) {
                 Button(
                     onClick = {
 
-                            scope.launch {
-                                viewModel.Insert(task = Task(
+                        scope.launch {
+                            viewModel.Insert(
+                                task = Task(
                                     id = null,
                                     title = taskTitle,
                                     notes = notes,
                                     category = selectedCategory,
                                     dateMillis = selectedDateMillis,
                                     timeMillis = selectedTimeMillis
-                                ))
-                            }
-                            navController.popBackStack()
+                                )
+                            )
+                        }
+                        navController.popBackStack()
 
                     },
                     modifier = Modifier
